@@ -1,0 +1,17 @@
+{
+  "name": "claritty",
+  "owner": {
+    "name": "Claritty",
+    "url": "https://app.claritty.ai"
+  },
+  "metadata": {
+    "description": "Official Claritty plugins for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "claritty",
+      "source": "./plugins/claritty",
+      "description": "Scaffold a new Claritty agentic app with /claritty:new."
+    }
+  ]
+}
