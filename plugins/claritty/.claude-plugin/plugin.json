@@ -1,11 +1,11 @@
 {
   "name": "claritty",
-  "description": "Scaffold a new Claritty agentic app from the agentic-app-seed template.",
-  "version": "0.1.0",
+  "description": "Describe your idea and Claritty scaffolds, plans, and builds a full agentic app + dashboard widgets — guided, end-to-end, with /claritty:new.",
+  "version": "0.2.0",
   "author": {
     "name": "Claritty",
     "url": "https://app.claritty.ai"
   },
   "homepage": "https://app.claritty.ai",
-  "keywords": ["claritty", "scaffold", "agentic", "create-app"]
+  "keywords": ["claritty", "scaffold", "agentic", "create-app", "guided", "brainstorm", "build", "widgets"]
 }
