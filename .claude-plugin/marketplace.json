@@ -11,7 +11,7 @@
     {
       "name": "claritty",
       "source": "./plugins/claritty",
-      "description": "Scaffold a new Claritty agentic app with /claritty:new."
+      "description": "Guided build: describe your idea and /claritty:new scaffolds, plans, and builds a full Claritty agentic app + widgets."
     }
   ]
 }
