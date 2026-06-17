@@ -24,9 +24,13 @@ for answers (use the AskUserQuestion tool, max ~5). Cover:
 1. **Problem & who has it** — what's painful and for whom?
 2. **What to automate** — what should the app *do* for them? (this becomes the agent/workflow)
 3. **Cadence** — should it run on a schedule / interval / webhook? (this becomes the trigger)
-4. **The glance** — what's the ONE thing the dashboard widget should show, and the single
+4. **Outside services** — what does it read from or act on out in the world? (email, Slack,
+   LinkedIn/X, a CRM, Stripe, Notion, GitHub, …). Most of these are **built-in Claritty
+   integrations** with platform-managed OAuth — you do NOT need API keys and you do NOT mock them.
+   You'll confirm the exact ones against the catalog in Phase 3/4. Don't ask the user for keys.
+5. **The glance** — what's the ONE thing the dashboard widget should show, and the single
    most useful action on it?
-5. **Vibe & name** — desired mood/feel (and any color/brand leanings) + an app name.
+6. **Vibe & name** — desired mood/feel (and any color/brand leanings) + an app name.
 
 If the idea is already specific, infer sensible answers and only ask what's genuinely unclear.
 Keep it to one round if you can.
@@ -59,6 +63,14 @@ session won't auto-load the app's CLAUDE.md/.claude config, so read these explic
 - `<app>/.claude/prompts/brainstorm.md` and `<app>/.claude/design-tokens.md` — design system + tokens
 - `<app>/WIDGETS.md` — the 3 fixed widget sizes, action patterns, hard rules
 - `<app>/CLAUDE.md` and `<app>/LLM_PROXY.md` — platform rules + how to call the model
+- `<app>/catalog/INDEX.md` — **the built-in integration catalog** (Gmail, Slack, LinkedIn, X,
+  HubSpot, Salesforce, Stripe, Notion, GitHub, … ~33 services). `<app>/INTEGRATIONS.md` — how to
+  declare + use them. **Catalog-first rule:** for every outside service from Phase 1, grep
+  `catalog/INDEX.md` for it. If it's there it is a **built-in integration — the platform handles
+  OAuth/credentials**; you just declare it and call its tools (next phases). NEVER ask the user for
+  API keys, write OAuth code, or build a mock data layer for a service that's in the catalog. If a
+  service is NOT in the catalog (e.g. reddit/g2/hn), say so and plan a custom read-only tool or a
+  clearly-labeled seed instead — never pretend.
 - The example code you'll model on / replace: `<app>/backend/agents/example_agent.py`,
   `backend/workflows/example_workflow.py`, `backend/triggers/example_trigger.py`,
   `backend/routes/app.py`, `backend/models.py`, `frontend/src/components/Widget.tsx`,
@@ -70,6 +82,12 @@ Present a tight plan and wait for the user's OK before writing code. Include:
 - **Problem & users** (one or two lines)
 - **Backend** — the `@agent`(s) that solve it, the `@workflow` that runs+persists them, and the
   `@trigger_template` cadence; the data model(s) (each with `user_id`)
+- **External data & actions** — list every outside source/action and mark each as one of:
+  **catalog integration `<id>`** (in `catalog/INDEX.md` → declare it + use its tools, platform OAuth,
+  no keys); **custom tool** (no catalog match → a read-only `@tool` you write); or **honest seed**
+  (no real source available → clearly-labeled sample data, never faked success). State the
+  not-connected behavior (a 409 / connect-prompt), never a simulated success. Example for a
+  social-mentions app: LinkedIn + X → catalog integrations; Reddit/G2 → custom tool or seed.
 - **Widget** — what small / medium / large each show, and the primary action per size
   (a `runQuickAction` in-place vs a `triggerDeepLink` into the app)
 - **Design identity** — palette as HSL channels for `--brand-accent` / `--brand-accent-600` /
@@ -89,6 +107,15 @@ Implement against the patterns you read in Phase 3.
   `from claritty_sdk.llm import get_llm_client` (never a raw provider SDK), wrapped in
   `asyncio.to_thread`, with a deterministic **heuristic fallback** so it works offline.
 - Create your `@workflow` (`@uses_agent` + persist results) and your `@trigger_template`.
+- **Integrations (catalog-first):** for each catalog service from the plan, declare it under
+  `intelligence.yaml#integrations` (`- id: <id>`) and list its tools in the agent's `tools:` (e.g.
+  `linkedin.fetch_posts`, `gmail.list_messages`) — declaring the integration alone does NOT grant
+  tool access. The agent calls those tools (named in its `system_prompt`) or a custom tool reaches
+  the connection via `ctx.integration("<id>")`. The platform supplies per-user OAuth creds at
+  runtime — no keys, no OAuth code. Locally, set `CLARITTY_FAKE_CREDS_<ID>='{"access_token":"…"}'`
+  in `.env` to exercise the real path. When a service isn't connected, surface a 409 / connect-prompt
+  — never fake success. (See `INTEGRATIONS.md`.) For a non-catalog source, write a custom read-only
+  `@tool` or seed clearly-labeled samples.
 - **Delete** the three seed examples (`example_agent.py`, `example_workflow.py`, `example_trigger.py`).
 - Rewrite `backend/routes/app.py` with your endpoints — **keep `GET /api/widget`** (the platform
   requires it) and the `_resolve_user(X-User-ID)` multi-tenancy pattern. Keep `frontend/src/lib/api.ts`

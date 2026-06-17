@@ -1,7 +1,7 @@
 {
   "name": "claritty",
   "description": "Describe your idea and Claritty scaffolds, plans, and builds a full agentic app + dashboard widgets — guided, end-to-end, with /claritty:new.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Claritty",
     "url": "https://app.claritty.ai"
