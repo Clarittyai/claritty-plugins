@@ -81,7 +81,11 @@ session won't auto-load the app's CLAUDE.md/.claude config, so read these explic
 Present a tight plan and wait for the user's OK before writing code. Include:
 - **Problem & users** (one or two lines)
 - **Backend** — the `@agent`(s) that solve it, the `@workflow` that runs+persists them, and the
-  `@trigger_template` cadence; the data model(s) (each with `user_id`)
+  `@trigger_template` cadence; the data model(s) (each with `user_id`). When the app has **distinct
+  stages** (ingest → analyze → act/persist), prefer a **multi-step workflow DAG** — `tool` and
+  `agent` steps wired via `${steps.<id>.output.<field>}` — over one mega-agent, so the pipeline is
+  legible in the Intelligence graph. A single orchestrating agent is right only when the LLM should
+  own the whole flow.
 - **External data & actions** — list every outside source/action and mark each as one of:
   **catalog integration `<id>`** (in `catalog/INDEX.md` → declare it + use its tools, platform OAuth,
   no keys); **custom tool** (no catalog match → a read-only `@tool` you write); or **honest seed**
@@ -113,9 +117,14 @@ Implement against the patterns you read in Phase 3.
   tool access. The agent calls those tools (named in its `system_prompt`) or a custom tool reaches
   the connection via `ctx.integration("<id>")`. The platform supplies per-user OAuth creds at
   runtime — no keys, no OAuth code. Locally, set `CLARITTY_FAKE_CREDS_<ID>='{"access_token":"…"}'`
-  in `.env` to exercise the real path. When a service isn't connected, surface a 409 / connect-prompt
-  — never fake success. (See `INTEGRATIONS.md`.) For a non-catalog source, write a custom read-only
-  `@tool` or seed clearly-labeled samples.
+  in `.env` to exercise the real path. When a service isn't connected, surface a 409 / inline
+  connect-prompt — never fake success. (See `INTEGRATIONS.md`.) For a non-catalog source, write a
+  custom read-only `@tool` or seed clearly-labeled samples.
+  **Connecting is platform-owned — build NO connect surface.** Declaring in `intelligence.yaml` is
+  all the app does; the platform lists the app's integrations + runs OAuth on its Intelligence /
+  Settings → Integrations tabs. **Delete the seed's `frontend/src/pages/Integrations.tsx` +
+  `components/SetupChecklist.tsx`, remove the `/integrations` route + Integrations nav item + the
+  setup banner from `Layout.tsx`.** Never build an in-app Integrations page or "connect N services" banner.
 - **Delete** the three seed examples (`example_agent.py`, `example_workflow.py`, `example_trigger.py`).
 - Rewrite `backend/routes/app.py` with your endpoints — **keep `GET /api/widget`** (the platform
   requires it) and the `_resolve_user(X-User-ID)` multi-tenancy pattern. Keep `frontend/src/lib/api.ts`
@@ -127,7 +136,13 @@ Implement against the patterns you read in Phase 3.
 - Set the real `appName`/`appDescription` in `frontend/src/lib/app-meta.ts`.
 - Replace `frontend/src/pages/Dashboard.tsx` (the template showcase) with the app's real landing.
 - Swap the Claritty logo in `frontend/src/components/Layout.tsx` for the app's own mark; reskin
-  `frontend/src/components/ui/*` to taste; update nav/routes for your real pages.
+  `frontend/src/components/ui/*` to taste; update nav/routes for your real pages (and **drop the
+  Integrations route + nav item** — connecting is platform-owned, see the Integrations note above).
+- **Embed-safe shell:** the platform renders the app in a panel/iframe often narrower than a desktop
+  window, so a `Layout` that *swaps whole shells* on a viewport breakpoint (desktop sidebar
+  `hidden lg:flex` ⇄ mobile bottom-tabs `lg:hidden`) shows the MOBILE shell on Claritty even though it
+  looks right full-window locally. Prefer a single fluid layout, OR force the desktop shell when
+  embedded: `const [embedded] = useState(() => { try { return window.self !== window.top } catch { return true } })` and gate each shell-swap class on it. (See the app's `CLAUDE.md` → "App pages are embedded".)
 
 **Widgets (the glance + the right actions):**
 - Rebuild `frontend/src/components/Widget.tsx` for small/medium/large using
