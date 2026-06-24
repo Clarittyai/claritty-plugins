@@ -17,23 +17,43 @@ The user's idea (may be empty): **$ARGUMENTS**
 
 ---
 
-## Phase 1 — Understand the problem (ask, then WAIT)
+## Phase 1 — Discovery: problem → 2 ideal outcomes → focused questions (ask, then WAIT)
 
-If the idea is missing or vague, ask the user a SHORT batch of focused questions and wait
-for answers (use the AskUserQuestion tool, max ~5). Cover:
-1. **Problem & who has it** — what's painful and for whom?
-2. **What to automate** — what should the app *do* for them? (this becomes the agent/workflow)
-3. **Cadence** — should it run on a schedule / interval / webhook? (this becomes the trigger)
-4. **Outside services** — what does it read from or act on out in the world? (email, Slack,
-   LinkedIn/X, a CRM, Stripe, Notion, GitHub, …). Most of these are **built-in Claritty
-   integrations** with platform-managed OAuth — you do NOT need API keys and you do NOT mock them.
-   You'll confirm the exact ones against the catalog in Phase 3/4. Don't ask the user for keys.
-5. **The glance** — what's the ONE thing the dashboard widget should show, and the single
-   most useful action on it?
-6. **Vibe & name** — desired mood/feel (and any color/brand leanings) + an app name.
+Run **Claritty's own discovery method** — the same one the platform uses. Don't jump
+straight to features. Be warm and concise.
 
-If the idea is already specific, infer sensible answers and only ask what's genuinely unclear.
-Keep it to one round if you can.
+**1. Restate the problem** in one line so you and the user are aligned.
+
+**2. Propose TWO ideal outcomes for the user to pick from** (this is the heart of it —
+show where this could land, don't ask "what features?"):
+- **Parity first:** if the Claritty CLI is signed in, get the platform's real ones —
+  run `claritty discover outcomes "<their problem>"`. It prints one line of JSON
+  (`{"outcomes":[{"title","description"}]}`). If it prints `{"unauthenticated":true}`
+  or errors, generate the two yourself with the rules below.
+- Make them **DISTINCT in approach:** one **proactive** ("it handles it for me" — acts
+  on a schedule/automatically), one **on-demand** ("it helps me when I act"). ≤6-word
+  title + 1–2 sentences naming the result + the key thing that delivers it.
+  **Self-contained:** the app's own data + built-in Claude + schedule/manual triggers;
+  no "connect your account" unless a catalog integration covers it (Phase 3 confirms).
+- Present both via **AskUserQuestion** (the user can pick one or describe their own).
+  The chosen outcome is the app's north star — carry it through every later phase.
+
+**3. Ask 3–5 focused follow-ups** (concrete options, plain language — never say
+*trigger/workflow/agent*; every question offers a "Let me specify…" choice):
+- **Parity first:** `claritty discover questions "<their problem>"` → one line of JSON
+  (`{"questions":[{"prompt","options":[…]}]}`); on the unauthenticated signal/error,
+  generate them yourself.
+- Across the questions, COVER AT LEAST: the **widget glance** (the ONE thing seen at a
+  glance + the single most useful tap-action), **automation** (cadence + autonomy —
+  autonomous / suggestive / observational), and **data** (its own data, or an outside
+  source → confirm the obvious catalog service, never ask for keys).
+- Ask in ONE batch where you can (AskUserQuestion) and **WAIT** for answers.
+
+**4. Vibe & name** — settle desired mood/feel (+ any color/brand leanings) and an app
+name if they're not already implied.
+
+If the idea is already specific, still **propose the two outcomes and confirm one**,
+then only ask the follow-ups that are genuinely unclear. Keep it to one round if you can.
 
 ## Phase 2 — Scaffold the base structure (on the Desktop)
 
@@ -52,8 +72,11 @@ Tell the user where it landed (`~/Desktop/<app-name>`). Then, in the new app dir
 (use absolute paths under `~/Desktop/<app-name>` — the shell cwd may reset between commands):
 - `rm -f <app>/.claritty-seed-pristine`  ← activates the identity gate
 - Save the brief you gathered to `<app>/docs/plans/0001-brief.md` (`mkdir -p` first): the
-  problem, target users, the agent/workflow/trigger you'll build, the widget glance + actions,
-  and the design identity (palette, font, app name).
+  problem, the **chosen ideal outcome**, the **clarifying answers**, target users, the
+  agent/workflow/trigger you'll build, the widget glance + actions per size, and the design
+  identity (palette, font, app name). End it with a one-sentence **definition of done** —
+  also write that line into `<app>/app-config.json` → `clarity_marketplace.core_action.definition_of_done`
+  (the identity gate reads it). This brief mirrors the platform's own app brief.
 
 ## Phase 3 — Load the app's own build rules (don't guess)
 
