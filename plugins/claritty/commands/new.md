@@ -176,13 +176,22 @@ Implement against the patterns you read in Phase 3.
 
 ## Phase 6 — Verify + report
 
-From the app dir:
-- `node scripts/check-not-template.mjs` — the **identity gate** MUST pass (fix every item it lists, re-run until green).
+From the app dir, run BOTH deterministic gates (they also fire on the Stop hook, so the build
+can't be called done until they're green):
+- `node scripts/check-not-template.mjs` — the **identity gate** (app no longer looks like the seed). Fix every item, re-run until green.
+- `node scripts/check-coherence.mjs` — the **coherence gate** (Definition of Done set, discovery brief present, every model user-scoped). Fix every item, re-run until green.
 - `cd frontend && npm run type-check` (and `npm run check:identity`).
 - Optionally boot it: `docker compose up -d --build`, then `curl localhost:<port>/health` and
   `/api/widget`. If another Claritty app is already running, first set unique
   `CONTAINER_PREFIX`, `APP_PORT`, and `POSTGRES_PORT` in `<app>/.env` to avoid name/port clashes.
 
-Finish with a short summary: what you built (agent/workflow/trigger + widget + identity), how to
-run it, and the local URL. The app also ships its own identity-gate Stop hook + CI as a backstop
-for future sessions.
+Then run the **semantic review the gates can't do**: delegate to the `reviewer` sub-agent
+(`.claude/agents/reviewer.md`) via the Task tool — it judges whether the app actually solves its
+Definition of Done and whether the agent → workflow → widget wiring is coherent (the widget shows
+the agent's real output, the primary action calls a real workflow, tenancy queries filter by user).
+Address every BLOCKER it returns and re-review until the verdict is **PASS**. This mirrors the
+platform's internal DoD review, so an app built here meets the same quality bar.
+
+Finish with a short summary: what you built (agent/workflow/trigger + widget + identity), the
+reviewer's verdict, how to run it, and the local URL. The app also ships the identity + coherence
+Stop hooks + CI as a backstop for future sessions.
