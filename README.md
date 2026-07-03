@@ -21,13 +21,14 @@ Adds the `/claritty:new` slash command. Just describe the app you want:
 
 Claritty then drives the whole thing in one guided session:
 
-1. **Asks** a few focused follow-ups about your problem, automation, cadence, the
-   widget glance, and the look you want.
+1. **Asks once** — a single upfront round of focused questions about your problem,
+   the ideal outcome, automation, cadence, the widget glance, and the look you want.
+   That confirmed goal drives everything after; you won't be asked again.
 2. **Scaffolds** a fresh app on your **Desktop** via
    [`create-claritty-app`](https://www.npmjs.com/package/create-claritty-app).
 3. **Plans** the app — the `@agent`/`@workflow`/`@trigger` that solve your problem,
-   the dashboard widgets + their actions, and a distinct visual identity — and waits
-   for your OK.
+   the dashboard widgets + their actions, and a distinct visual identity — shares the
+   plan and keeps moving (no approval gate; open calls are decided by your goal).
 4. **Builds** it: backend logic + a beautiful app and widgets, following the seed's
    own design/identity/widget rules.
 5. **Verifies** with the seed's identity gate so the result never just looks like the
